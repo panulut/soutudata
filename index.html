@@ -66,6 +66,7 @@
           <input id="nameQuery" type="search" placeholder="Esim. Matti Meikäläinen" autocomplete="off">
           <button id="clearName" class="clear" type="button" aria-label="Tyhjennä nimihaku">×</button>
         </div>
+        <div id="nameSuggestions" class="name-suggestions" hidden></div>
       </div>
       <div class="field field-year">
         <label for="yearSelect">Vuosi</label>
@@ -94,6 +95,7 @@
       </div>
     </section>
 
+    <section id="athleteCard" class="athlete-card" hidden aria-live="polite"></section>
     <section id="results" class="results" aria-label="Hakutulokset"></section>
     <nav id="pagination" class="pagination" aria-label="Tulossivut"></nav>
   </main>

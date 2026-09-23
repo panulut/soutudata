@@ -287,18 +287,20 @@ h1 em {
   position:relative;
   z-index:1;
   display:grid;
-  grid-template-columns:minmax(240px,1.5fr) minmax(125px,.45fr) minmax(155px,.65fr) minmax(130px,.55fr) minmax(180px,1fr) minmax(150px,.65fr);
+  grid-template-columns:minmax(230px,1.7fr) minmax(105px,.65fr) minmax(135px,.85fr) minmax(125px,.75fr) minmax(180px,1.2fr) minmax(140px,.75fr);
   gap:1px;
   background:var(--line);
   border:1px solid var(--line);
   box-shadow:var(--shadow);
   border-radius:12px;
-  overflow:hidden;
+  overflow:visible;
 }
 .field {
+  min-width:0;
   background:rgba(255,255,255,0.9);
-  padding:18px 22px;
+  padding:17px 18px;
 }
+.field-name { position:relative; z-index:5; }
 label {
   display:block;
   margin-bottom:10px;
@@ -309,10 +311,38 @@ label {
   text-transform:uppercase;
 }
 .input-wrap {
+  position:relative;
   display:flex;
   align-items:center;
   gap:12px;
 }
+.name-suggestions {
+  position:absolute;
+  z-index:4;
+  left:18px;
+  right:18px;
+  top:78px;
+  display:grid;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:0 0 8px 8px;
+  background:#fff;
+  box-shadow:0 14px 28px rgba(17,17,17,.14);
+}
+.name-suggestions[hidden] { display:none; }
+.name-suggestions button {
+  padding:11px 14px;
+  border:0;
+  border-bottom:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+  font:700 .92rem "Nunito Sans",sans-serif;
+  text-align:left;
+  cursor:pointer;
+}
+.name-suggestions button:last-child { border-bottom:0; }
+.name-suggestions button:hover,
+.name-suggestions button:focus-visible { background:var(--water); color:var(--blue); outline:0; }
 .input-wrap svg {
   width:20px;
   fill:none;
@@ -320,12 +350,19 @@ label {
   stroke-width:1.7;
 }
 input,select {
+  min-width:0;
+  overflow:hidden;
   width:100%;
   border:0;
   outline:0;
   background:transparent;
   color:var(--ink);
   font:700 1rem "Nunito Sans";
+}
+select {
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  cursor:pointer;
 }
 input::placeholder { color:#8aa0aa; font-weight:400; }
 .clear {
@@ -341,10 +378,13 @@ input::placeholder { color:#8aa0aa; font-weight:400; }
   border:0;
   background:var(--orange);
   color:white;
-  padding:0 24px;
+  min-width:0;
+  padding:0 16px;
   font:900 0.82rem "Nunito Sans";
   letter-spacing:.08em;
   text-transform:uppercase;
+  line-height:1.15;
+  white-space:normal;
   cursor:pointer;
   transition:transform .2s ease, box-shadow .2s ease;
   box-shadow:none;
@@ -392,6 +432,40 @@ input::placeholder { color:#8aa0aa; font-weight:400; }
   border-radius:8px;
 }
 .results { min-height:260px; }
+.athlete-card {
+  display:grid;
+  grid-template-columns:minmax(220px,1fr) minmax(360px,1.5fr) auto;
+  align-items:center;
+  gap:24px;
+  margin:22px 0 4px;
+  padding:22px 24px;
+  border-left:6px solid var(--orange);
+  border-radius:10px;
+  background:var(--blue);
+  color:#fff;
+  box-shadow:var(--shadow);
+}
+.athlete-card[hidden] { display:none; }
+.athlete-kicker {
+  display:block;
+  margin-bottom:4px;
+  color:var(--sand);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.athlete-card h2 { margin:0; font:800 2rem/1 "Barlow Condensed",sans-serif; }
+.athlete-heading p { margin:8px 0 0; color:#dce0ff; font-size:12px; }
+.athlete-stats { display:grid; grid-template-columns:repeat(4, minmax(64px,1fr)); gap:14px; }
+.athlete-stats strong { display:block; font:800 1.8rem/1 "Barlow Condensed",sans-serif; color:var(--sand); }
+.athlete-stats span { color:#fff; font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.athlete-series { margin:0; color:#dce0ff; font-size:12px; text-align:right; }
+.identity-choices { display:grid; grid-template-columns:1fr; gap:10px; }
+.identity-choices button { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; padding:12px 14px; border:1px solid rgba(255,255,255,.3); border-radius:7px; background:rgba(255,255,255,.1); color:#fff; text-align:left; cursor:pointer; }
+.identity-choices button:hover, .identity-choices button:focus-visible { background:var(--sand); color:var(--ink); outline:none; }
+.identity-choices strong { font:700 1rem "Nunito Sans",sans-serif; }
+.identity-choices span { font-size:11px; opacity:.8; }
 .result-card {
   display:grid;
   grid-template-columns:78px minmax(0,1fr) 90px 130px 36px;
@@ -534,6 +608,8 @@ footer a { color:var(--blue); }
   .summary { grid-template-columns:1fr auto; }
   .summary p { grid-row:2; grid-column:1/-1; margin-top:-8px; }
   .result-card { grid-template-columns:58px 1fr 55px; gap:12px; }
+  .athlete-card { grid-template-columns:1fr; gap:18px; padding:20px; }
+  .athlete-series { text-align:left; }
   .year-badge { width:52px; height:52px; font-size:1rem; }
   .finish { display:none; }
   .source { display:none; }

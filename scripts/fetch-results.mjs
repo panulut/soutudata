@@ -11,7 +11,12 @@ async function get(url) {
   const bytes=await response.arrayBuffer();
   const probe=new TextDecoder("windows-1252").decode(bytes.slice(0,1500));
   const charset=/charset=["']?([\w-]+)/i.exec(probe)?.[1]?.toLowerCase();
-  return new TextDecoder(charset?.includes("1252") ? "windows-1252" : "utf-8").decode(bytes);
+  const utf8=new TextDecoder("utf-8").decode(bytes);
+  if (!charset || charset.includes("utf-8")) {
+    if (!(utf8.match(/�/g)||[]).length) return utf8;
+    return new TextDecoder("windows-1252").decode(bytes);
+  }
+  return new TextDecoder(charset.includes("1252") || charset.includes("8859") ? "windows-1252" : "utf-8").decode(bytes);
 }
 
 function yearLinks(html) {
@@ -36,6 +41,29 @@ function extractTables(html, year, source, categoryHint="") {
     const headerNames=rawCells.map((cell)=>cell.toLocaleLowerCase("fi"));
     if (headerNames.includes("nimi")) { tableHeaders=headerNames; continue; }
     if (rawCells.length===1) tableHeaders=[];
+    if (rawCells.length >= 7 && rawCells[2] && !/^(nimi|name)$/i.test(rawCells[2])) {
+      const nameIndex=tableHeaders.indexOf("nimi") >= 0 ? tableHeaders.indexOf("nimi") : 2;
+      const clubIndex=tableHeaders.indexOf("seura") >= 0 ? tableHeaders.indexOf("seura") : 3;
+      const startsIndex=tableHeaders.indexOf("soutukerta") >= 0 ? tableHeaders.indexOf("soutukerta") : 4;
+      const timeIndex=tableHeaders.indexOf("aika") >= 0 ? tableHeaders.indexOf("aika") : 6;
+      const sourceRank=tableHeaders[0] === "sija" ? rawCells[0] : "";
+      results.push(make({year,category:categoryHint||category,rank:sourceRank,crew:rawCells[nameIndex],time:rawCells[timeIndex],skipTimeInference:true,members:[rawCells[clubIndex],rawCells[startsIndex]].filter(Boolean).join(" · "),details:rawCells.filter(Boolean).join(" · "),source}));
+      continue;
+    }
+    if (tableHeaders.includes("nimi") && tableHeaders.includes("aika")) {
+      const nameIndex=tableHeaders.indexOf("nimi");
+      const clubIndex=tableHeaders.indexOf("seura");
+      const startsIndex=tableHeaders.indexOf("soutukerta");
+      const timeIndex=tableHeaders.indexOf("aika");
+      const name=rawCells[nameIndex] || "";
+      if (name) {
+        const club=clubIndex >= 0 ? rawCells[clubIndex] : "";
+        const starts=startsIndex >= 0 ? rawCells[startsIndex] : "";
+        const time=timeIndex >= 0 ? rawCells[timeIndex] : "";
+        results.push(make({year,category:categoryHint||category,rank:"",crew:name,time,skipTimeInference:true,members:[club,starts].filter(Boolean).join(" · "),details:rawCells.filter(Boolean).join(" · "),source}));
+      }
+      continue;
+    }
     if (tableHeaders.includes("nimi")) {
       const nameIndex=tableHeaders.indexOf("nimi");
       const clubIndex=tableHeaders.indexOf("seura");
@@ -97,12 +125,44 @@ function extractLines(html, year, source) {
 }
 
 function make(item) {
-  item.category=item.category.replace(/^§H§/,"").trim()||"Tulokset";
+  item.category=canonicalCategory(item.category);
+  if (!item.time && !item.skipTimeInference) {
+    const times=[...item.details.matchAll(/\b(?:\d{1,2}:)?\d{1,2}:\d{2}(?:[.,]\d+)?\b/g)].map((match)=>match[0]);
+    item.time=times.at(-1)||"";
+  }
   item.searchText=[item.year,item.category,item.rank,item.crew,item.time,item.members,item.details].join(" ");
   item.id=`${item.year}-${hash(item.searchText)}`;
   return item;
 }
+function canonicalCategory(category="") {
+  const value=category.replace(/^§H§/,"").trim()||"Tulokset";
+  const normalized=value.toLocaleLowerCase("fi");
+  if (/yksinsoutu/.test(normalized) && (/mies|miehet|miesten|\bm\b|avoin/.test(normalized)) && !/nais|naiset|seka|mixed|yli\s*\d+|alle\s*\d+/.test(normalized)) return "Miehet yksinsoutu yleinen";
+  return value;
+}
 function hash(value) { let h=2166136261; for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619)} return (h>>>0).toString(36); }
+
+function inferPlacings(rows) {
+  const groups=new Map();
+  for(const row of rows) {
+    if(!row.time) continue;
+    const key=`${row.year}|${row.category}|${row.source}`;
+    if(!groups.has(key)) groups.set(key,[]);
+    groups.get(key).push(row);
+  }
+  for(const group of groups.values()) {
+    group.sort((a,b)=>timeValue(a.time)-timeValue(b.time));
+    group.forEach((row,index)=>{ if(!row.rank) row.rank=String(index+1); });
+  }
+}
+
+function timeValue(value) {
+  const parts=String(value).replace(",",".").split(":").map(Number);
+  if(parts.some(Number.isNaN)) return Number.POSITIVE_INFINITY;
+  if(parts.length===2) return parts[0]*60+parts[1];
+  if(parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+  return Number.POSITIVE_INFINITY;
+}
 
 function resultLinks(html, base) {
   const links=[];
@@ -139,8 +199,9 @@ for(const {year,url} of links) {
       try { const childHtml=await get(child.url); return [...extractLines(childHtml,year,child.url),...extractTables(childHtml,year,child.url,child.label)]; }
       catch(error) { console.warn(`  ${child.url}: ${error.message}`); return []; }
     })).flat();
-    const combined=[...lineResults,...tableResults,...childResults];
+    const combined=[...lineResults,...tableResults,...childResults].filter((result)=>result.crew?.trim() && result.category && result.category!=="Tulokset");
     const unique=[...new Map(combined.map((r)=>[r.id,r])).values()];
+    inferPlacings(unique);
     all.push(...unique); years.push({year,url,count:unique.length,status:unique.length?"ok":"ei tunnistettuja rivejä"});
     console.log(`${year}: ${unique.length} riviä (${children.length} sarjasivua)`);
   } catch(error) { years.push({year,url,count:0,status:error.message}); console.warn(`${year}: ${error.message}`); }
