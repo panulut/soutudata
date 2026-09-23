@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hae Sulkavan Suursoutujen tuloksia soutajan nimellä tai vuodella.">
+  <title>Soutudata — Sulkavan Suursoutujen tuloshaku</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-wrap">
+      <a class="brand" href="#"><span class="brand-mark">S</span>SOUTU<span>DATA</span></a>
+    </div>
+    <nav class="main-nav" aria-label="Päävalikko">
+      <a href="#">Etusivu</a>
+      <a href="#">Tulokset</a>
+      <a href="#">Historia</a>
+      <a href="#">Arkisto</a>
+    </nav>
+    <div class="header-actions">
+      <div class="source-status"><span></span><strong id="dataStatus">Aineisto latautuu</strong></div>
+      <a class="header-cta" href="#result-panel">Katso tulokset</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Sulkavan Suursoudut · soutuhistoria</p>
+        <h1>Hae kymmenien vuosien <em>tulokset</em> yhdestä paikasta.</h1>
+        <p class="lead">Soututulokset, venekunnat, seurat, aikajärjestys ja vuodet helposti löydettävissä. Mahdollisuus tehdä ne näkyviksi myös sponsorille, fanille tai tapahtumakumppanille.</p>
+        <div class="hero-actions">
+          <a href="#result-panel" class="primary-link">Selaa tuloksia</a>
+          <a href="https://www.suursoudut.fi/" target="_blank" rel="noopener" class="secondary-link">www.suursoudut.fi</a>
+        </div>
+      </div>
+      <div class="hero-panel" aria-label="Tapahtumatiedot">
+        <div class="event-card">
+          <p class="event-label">Soutuhistoria</p>
+          <div class="event-badge">1968</div>
+          <h2>59. Sulkavan Suursoudut</h2>
+          <ul>
+            <li>Vuodesta 1968 asti</li>
+            <li>Yli 26 000 tulosta</li>
+            <li>Arkisto helposti käytettävissä</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-bar" aria-label="Keskeiset luvut">
+      <div><strong>26k+</strong><span>tulosta</span></div>
+      <div><strong>58</strong><span>vuotta historiaa</span></div>
+      <div><strong>1</strong><span>yksi selkeä hakukokemus</span></div>
+    </section>
+
+    <section id="result-panel" class="search-panel" aria-label="Tuloshaku">
+      <div class="field field-name">
+        <label for="nameQuery">Nimi, venekunta tai seura</label>
+        <div class="input-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg>
+          <input id="nameQuery" type="search" placeholder="Esim. Matti Meikäläinen" autocomplete="off">
+          <button id="clearName" class="clear" type="button" aria-label="Tyhjennä nimihaku">×</button>
+        </div>
+      </div>
+      <div class="field field-year">
+        <label for="yearSelect">Vuosi</label>
+        <select id="yearSelect"><option value="">Kaikki vuodet</option></select>
+      </div>
+      <div class="field field-boat-class">
+        <label for="boatClassSelect">Veneluokka</label>
+        <select id="boatClassSelect"><option value="">Kaikki veneluokat</option></select>
+      </div>
+      <div class="field field-gender">
+        <label for="genderSelect">Sukupuoli</label>
+        <select id="genderSelect"><option value="">Kaikki</option></select>
+      </div>
+      <div class="field field-series">
+        <label for="seriesSelect">Sarja</label>
+        <select id="seriesSelect"><option value="">Kaikki sarjat</option></select>
+      </div>
+      <button id="searchButton" class="search-button" type="button">Hae tuloksia <span>→</span></button>
+    </section>
+
+    <section class="summary" aria-live="polite">
+      <div><span id="resultCount">—</span><small>tulosta</small></div>
+      <p id="summaryText">Valitse vuosi tai kirjoita hakusana.</p>
+      <div class="view-actions">
+        <button id="downloadButton" type="button" title="Lataa näkyvät tulokset CSV-tiedostona">Lataa CSV</button>
+      </div>
+    </section>
+
+    <section id="results" class="results" aria-label="Hakutulokset"></section>
+    <nav id="pagination" class="pagination" aria-label="Tulossivut"></nav>
+  </main>
+
+  <template id="resultTemplate">
+    <article class="result-card">
+      <div class="year-badge"></div>
+      <div class="result-main">
+        <p class="category"></p>
+        <h2 class="crew"><button class="crew-link" type="button"></button></h2>
+        <p class="members"></p>
+      </div>
+      <div class="placing"><span class="rank"></span><small>SIJA</small></div>
+      <div class="finish"><span class="time"></span><small>TULOS</small></div>
+      <a class="source" target="_blank" rel="noopener" aria-label="Avaa alkuperäinen tulossivu">↗</a>
+    </article>
+  </template>
+
+  <footer><p>Aineisto: <a href="https://www.suursoudut.fi/soutuhistoria/soututulokset/" target="_blank" rel="noopener">Sulkavan Suursoudut</a></p><p>Historiallisessa aineistossa voi olla puutteita.</p></footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
