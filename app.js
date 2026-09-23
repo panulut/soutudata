@@ -15,10 +15,13 @@ const classifyBoat = (category) => {
 };
 const classifyGender = (category) => {
   const value = normalize(category);
+  const words = value.split(/[^a-z0-9]+/).filter(Boolean);
   if (/nais|naisten/.test(value)) return "naiset";
   if (/mies|miehet|miesten/.test(value)) return "miehet";
-  if (/\bn\b/.test(value)) return "naiset";
-  if (/\bm\b/.test(value)) return "miehet";
+  if (words.includes("n")) return "naiset";
+  if (words.includes("m")) return "miehet";
+  if (/seka|mixed/.test(value)) return "";
+  if (/(yksinsoutu|vuorosoutu|parisoutu|kirkkoveneet)/.test(value) && /(yleinen|avoin|yli\s*\d+|alle\s*\d+)/.test(value)) return "miehet";
   return "";
 };
 
